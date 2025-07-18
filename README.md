@@ -1,4 +1,4 @@
-# How to properly do a filesystem check (fsck or e2fck) on Synology DSM 7
+# How to properly do a filesystem check (fsck or e2fck) on Synology DSM 7 - Simplified
 
 Steps below were performed on DSM DSM 7.2.2-72806 Update 3. I have a DS724+, and after an improper shutdown, I began experiencing filesystem errors that couldn’t be resolved through the GUI.
 
