@@ -1,47 +1,28 @@
 # How to properly do a filesystem check (fsck or e2fck) on Synology DSM 7
 
-Most instructions founds online are for older DSM versions (6).  The following steps were performed by a synology support agent during a support case I created.  Steps below were performed on DSM 7.1.1-42962 Update 2.
+Steps below were performed on DSM DSM 7.2.2-72806 Update 3. I have a DS724+, and after an improper shutdown, I began experiencing filesystem errors that couldn’t be resolved through the GUI.
 
-I have a DS1821+ and during a recent storm I lost power.  I have a UPS however it failed to shutdown the synology.  
-NOTE: Make sure and test your UPS shutdown, if you have many disks it can take longer to shutdown than reserved battery capacity.
+## WARNING: Perform these steps at your own risk!
 
-After the power down the DSM came back and had a warning on the main volume.
+Use Telnet (not SSH) to access your Synology, then elevate to root with sudo:
 
-The following steps were obtained by looking at ```/var/log/bash_history.log```.  Before you try any of these steps, attmpt to check the filesystem in Storage Manager, these steps are only if you fail to unmount.
-
-## Here are the steps performed by the synology tech:
-| WARNING: Perform these steps at your own risk! Open a support ticket! |
-|----------------------------------------------------------------------|
-
-SSH To your synology and sudo to root:
+### Become root
+```
+sudo -i
+```
 
 ### Disable all services and unmount volume: This will log out!
 ```
 synospace --stop-all-spaces
 ```
 
-### Log back in and check that your volume is not mounted, no lvm, mdstat empty
-```
-mount
-lvm lvscan
-cat /proc/mdstat
-```
-
-### Next we will skip file system check on boot:
-```
-touch /tmp/volume_skip_check
-```
-### Next we will disable our volume on startup, replace ```volume1``` with your volume.
-```
-synosetkeyvalue /etc/synoinfo.conf disable_volumes volume1
-```
-
 ### Next, go to the DSM GUI and Restart your synology.  
 After it comes back online your volume should be unmounted.  Give it a few minutes to finish starting up (5 minutes after ssh is up) and run the commands above to make sure you are not mounted and lvm sees your lvm.  We should be good to fsck now.  
-Run this command to see your mapper path to fsck:
+Run this command to see your mapper path to fsck (this step is usually unnecessary if the mapper is cachedev_0, in that case you can go directly to the next command):
 ```
 dmsetup table
 ```
+
 ### Now we'll fsck and auto accept all changes
 This can take awhile, you can `nohup <cmd> &` if you want to run in the backgroup, then monitor ```nohup.out```
 ```
@@ -76,27 +57,11 @@ Pass 5: Checking group summary information
 
 ```
 
-### After fsck reports all clean we can mount our volume!
+### Reboot
 ```
-mount /volume1
+reboot
 ```
-
-### Run some Synology specific checks and verify we're mounted:
-```
-synospace --map-file -d
-synocheckshare
-synocheckiscsitrg
-ll /volume1/
-grep volume1 /etc/samba/smb.share.conf
-```
-
 
 ### Warning Indicator
-At this point your filesystem should be healthy.  However DSM will still show a warning.  This is because the indicator that marks the volume healthy lives in a table that needs to be updated.  
+Simply run the filesystem check again using the Storage Manager app: this is because the indicator that marks the volume healthy lives in a table that needs to be updated.
 
-Go back to DSM and for your volume check the file system, it should be able to unmount now.  If it can't it will tell you why (I had to disable docker via package manager).
-
-
-
----
-via <https://github.com/jmiller0>
