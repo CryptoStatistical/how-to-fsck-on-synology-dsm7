@@ -16,9 +16,8 @@ sudo -i
 synospace --stop-all-spaces
 ```
 
-### Next, go to the DSM GUI and Restart your synology.  
-After it comes back online your volume should be unmounted.  Give it a few minutes to finish starting up (5 minutes after ssh is up) and run the commands above to make sure you are not mounted and lvm sees your lvm.  We should be good to fsck now.  
-Run this command to see your mapper path to fsck (this step is usually unnecessary if the mapper is cachedev_0, in that case you can go directly to the next command):
+### Log Back In and Verify the Mapper
+The previous command may have logged you out of the Telnet session. After logging back in, it’s now safe to run fsck. However, you’ll first need to identify the correct mapper corresponding to the physical devices.
 ```
 dmsetup table
 ```
